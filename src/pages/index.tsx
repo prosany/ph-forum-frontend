@@ -1,5 +1,5 @@
 import PostModule from "@/components/post-module";
-import UserPosts from "@/components/post-module/userPosts";
+import UserPosts from "@/components/post-module/UserPosts";
 import TabModule from "@/components/tab-module";
 import withAuth from "@/middlewares/withAuth";
 
@@ -24,21 +24,26 @@ const Home = () => {
             Top Issue/Trending Issue
           </h1>
           <hr className="my-5" />
-          <ul>
-            <li className="border-0 border-b w-full h-auto p-2 text-violet-900 my-2 text-sm font-normal">
-              <span className="font-semibold">1.</span> How to deploy project on
-              vercel
-            </li>
-
-            <li className="border-0 border-b w-full h-auto p-2 text-violet-900 my-2 text-sm font-normal">
-              <span>2.</span> Node.js is not installing on my machine. Show some
-              error.
-            </li>
-            <li className="border-0 border-b w-full h-auto p-2 text-violet-900 my-2 text-sm font-normal">
-              <span>3.</span> Git push not working, showing fatal. I'm not able
-              to solve the problem.
-            </li>
-          </ul>
+          <div className="space-y-2">
+            <article className="flex items-center space-x-4">
+              <div className="flex flex-col items-center bg-zinc-200 py-1 w-10 rounded dark:bg-zinc-700">
+                <span className="font-bold text-sm">442</span>
+              </div>
+              <h5>AWS Singapore Region</h5>
+            </article>
+            <article className="flex items-center space-x-4">
+              <div className="flex flex-col items-center bg-zinc-200 py-1 w-10 rounded dark:bg-zinc-700">
+                <span className="font-bold text-sm">57</span>
+              </div>
+              <h5>Export/import data from other Redis</h5>
+            </article>
+            <article className="flex items-center space-x-4">
+              <div className="flex flex-col items-center bg-zinc-200 py-1 w-10 rounded dark:bg-zinc-700">
+                <span className="font-bold text-sm">2</span>
+              </div>
+              <h5>Git push not working</h5>
+            </article>
+          </div>
         </div>
         <div className="p-4 border border-gray-100 bg-white rounded-lg shadow-sm mt-5 sticky top-20">
           <h1 className="text-center text-lg font-medium">My Issue Progress</h1>
