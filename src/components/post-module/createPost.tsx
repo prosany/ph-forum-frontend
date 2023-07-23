@@ -111,7 +111,7 @@ const CreatePost = (props: any) => {
               />
             </div>
             <div className="w-full">
-              <h1 className="text-md font-medium">Mahabub Hasan Sany</h1>
+              <h1 className="text-md font-medium">{user?.name}</h1>
               <span className="border px-4 py-1 rounded-lg select-none text-sm bg-slate-200 font-semibold">
                 <label htmlFor="status">
                   {formik.values.status === "Public" ? (
