@@ -1,7 +1,8 @@
+import moment from "moment";
 import React from "react";
 
-const UserPosts = (props: any) => {
-  const { image } = props;
+const UserPosts = ({ data }: any) => {
+  const { photosOrVideos, body, upVotesCount, status, createdAt, user } = data;
   return (
     <div className="border border-gray-100 bg-white rounded-lg shadow-sm my-5">
       <div className="flex items-start p-6">
@@ -14,10 +15,10 @@ const UserPosts = (props: any) => {
         </div>
         <div className="w-full">
           <div className="flex justify-between">
-            <h1 className="text-lg font-medium">Mahabub Hasan Sany</h1>
+            <h1 className="text-lg font-medium">{user.name}</h1>
             <div className="flex justify-center items-center">
               <p className="bg-violet-100 text-violet-800 font-medium text-sm px-3 py-1 rounded mr-3">
-                In Progress
+                {status}
               </p>
               <button className="mx-3">
                 <i className="bx bx-bookmark text-xl"></i>
@@ -32,43 +33,72 @@ const UserPosts = (props: any) => {
               <span className="mr-2 text-xs text-gray-600">
                 <i className="fa-regular fa-clock"></i>
               </span>
-              1 hours ago
+              {moment.parseZone(createdAt).local().fromNow()}
             </p>
-            <p className="text-xs text-gray-600">
+            <p
+              className="text-xs text-gray-600"
+              title={moment.parseZone(createdAt).local().format("LLL")}
+            >
               <span className="mr-2 text-xs text-gray-600">
                 <i className="fa-regular fa-calendar"></i>
               </span>
-              20 July 2023
+              {moment.parseZone(createdAt).local().format("LL")}
             </p>
             <p className="text-xs text-gray-600">
               <span className="mr-2 text-xs text-gray-600">
                 <i className="fa-solid fa-people-group"></i>
               </span>
-              Batch 8
+              {user.batch}
             </p>
           </div>
         </div>
       </div>
       <div className="px-6 text-left">
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam,
-          doloremque nulla! Ipsa aperiam blanditiis totam repudiandae
-          exercitationem doloremque fuga possimus laudantium unde nemo, dolorum
-          neque corporis ipsum tempora vero quam? Veritatis porro quasi
-          assumenda, expedita earum ut veniam sunt, aut corporis blanditiis,
-          quia odio deleniti alias aliquid vel modi nisi?
-        </p>
+        <p>{body}</p>
       </div>
-      <div>
-        <img src={image} alt="" className="w-full h-auto" />
+      <div
+        className={`grid grid-cols-${
+          photosOrVideos.length >= 3 ? 3 : photosOrVideos.length
+        } gap-2`}
+      >
+        {photosOrVideos.length > 0 &&
+          photosOrVideos.map((item: any, index: number) => (
+            <div key={index} className="w-full">
+              {item.type === "video" && (
+                <video
+                  src={item.url}
+                  controls={true}
+                  autoPlay
+                  muted
+                  loop
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              )}
+              {item.type === "image" && (
+                <img
+                  src={item.url}
+                  alt=""
+                  className="w-full h-auto rounded-lg"
+                />
+              )}
+            </div>
+          ))}
       </div>
       <div className="p-6">
-        <h1 className="text-gray-600 text-sm font-medium flex items-center">
-          <span className="text-xl mr-2">
-            <i className="fa-regular fa-comment-dots fa-flip-horizontal"></i>
-          </span>
-          150+ Comments
-        </h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-gray-600 text-sm font-medium flex items-center">
+            <span className="text-xl mr-2">
+              <i className="fa-regular fa-comment-dots fa-flip-horizontal"></i>
+            </span>
+            150+ Comments
+          </h1>
+          <button className="text-2xl text-colorBaseDisabled">
+            <i className="fa-regular fa-thumbs-up"></i>
+            <span className="block text-[10px] -mt-2 font-light text-gray-800">
+              {upVotesCount} Upvote
+            </span>
+          </button>
+        </div>
         <hr className="my-5" />
         <div className="flex items-center">
           <div className="w-14">

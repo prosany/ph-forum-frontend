@@ -2,21 +2,36 @@ import PostModule from "@/components/post-module";
 import UserPosts from "@/components/post-module/UserPosts";
 import TabModule from "@/components/tab-module";
 import withAuth from "@/middlewares/withAuth";
+import { useAppSelector } from "@/models";
+
+import { GET } from "@/utilities/axios-helper";
+import { useEffect, useState } from "react";
 
 const Home = () => {
+  const [posts, setPosts] = useState([]);
+  const { user } = useAppSelector((state) => ({
+    user: state.auth.user as any,
+  }));
+
+  useEffect(() => {
+    const getPosts = async () => {
+      const data = await GET("/get-posts", {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+      setPosts(data.result);
+    };
+    getPosts();
+  }, []);
   return (
     <div className="grid grid-cols-12 gap-10 my-8">
       <div className="col-span-8">
         <PostModule />
         <TabModule />
-        <UserPosts
-          image={
-            "https://img.freepik.com/free-photo/demo-digital-device_23-2149243954.jpg"
-          }
-        />
-        <UserPosts />
-        <UserPosts />
-        <UserPosts />
+        {posts.map((item: any, index: number) => (
+          <UserPosts key={item._id} data={item} />
+        ))}
       </div>
       <div className="col-span-4">
         <div className="p-4 border border-gray-100 bg-white rounded-lg shadow-sm mb-5">
