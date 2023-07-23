@@ -13,11 +13,17 @@ const DropdownMenu = (props: any) => {
       className="absolute top-full z-10 right-0 w-[255px] shadow-sm bg-white border rounded-lg duration-300 hidden"
     >
       <div className="p-3 flex items-center justify-between">
-        <img
-          src="https://files.mahabubsany.com/image/file-1680085400979-sany.png?key=111"
-          alt=""
-          className="w-10 h-10 rounded-full object-cover shadow-sm"
-        />
+        {user?.picture ? (
+          <img
+            src={user?.picture}
+            alt=""
+            className="w-10 h-10 rounded-full object-cover shadow-sm"
+          />
+        ) : (
+          <div className="bg-gray-100 text-gray-700 w-10 h-10 rounded-full flex justify-center items-center">
+            <i className="bx bx-user text-2xl"></i>
+          </div>
+        )}
         <div>
           <h1 className="font-medium text-sm capitalize text-gray-700 select-none">
             {user?.name}

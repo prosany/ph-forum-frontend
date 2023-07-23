@@ -3,6 +3,7 @@ import { postSchema } from "@/schemas/postSchema";
 import { POST } from "@/utilities/axios-helper";
 import uploadFiles from "@/utilities/cloudinary";
 import categories from "@/utilities/dummy-categories";
+import formatName from "@/utilities/format-user-name";
 import { useFormik } from "formik";
 import React, { useRef, useState } from "react";
 import { toast } from "react-hot-toast";
@@ -14,7 +15,7 @@ const initialValues = {
 };
 
 const CreatePost = (props: any) => {
-  const { closeFn } = props;
+  const { closeFn, setRerender } = props;
   const [tags, setTags] = useState<{
     text: string;
     tags: string[];
@@ -75,6 +76,7 @@ const CreatePost = (props: any) => {
           toast.dismiss(toastId);
           toast.success("Post successfully created.");
           closeFn((prev: any) => !prev);
+          setRerender((prev: any) => !prev);
         } else {
           toast.dismiss(toastId);
           toast.error("Post create failed.");
@@ -104,14 +106,20 @@ const CreatePost = (props: any) => {
         <form onSubmit={formik.handleSubmit}>
           <div className="flex items-start pt-3 px-6 pb-1">
             <div className="w-14">
-              <img
-                src="https://images.unsplash.com/photo-1457449940276-e8deed18bfff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8cHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D&w=1000&q=80"
-                alt=""
-                className="w-10 h-10 rounded-full object-cover shadow-sm"
-              />
+              {user?.picture ? (
+                <img
+                  src={user?.picture}
+                  alt=""
+                  className="w-10 h-10 rounded-full object-cover shadow-sm"
+                />
+              ) : (
+                <div className="bg-gray-100 text-gray-700 w-10 h-10 rounded-full flex justify-center items-center">
+                  <i className="bx bx-user text-2xl"></i>
+                </div>
+              )}
             </div>
             <div className="w-full">
-              <h1 className="text-md font-medium">{user?.name}</h1>
+              <h1 className="text-md font-medium mb-1">{user?.name}</h1>
               <span className="border px-4 py-1 rounded-lg select-none text-sm bg-slate-200 font-semibold">
                 <label htmlFor="status">
                   {formik.values.status === "Public" ? (
@@ -138,7 +146,9 @@ const CreatePost = (props: any) => {
               name="body"
               className="w-full p-4 outline-none resize-none text-[18px] max-h-[300px] text-gray-700 placeholder:text-gray-600"
               rows={5}
-              placeholder="Share or Ask Something to Everyone Mahabub?"
+              placeholder={`Share or Ask Something to Everyone ${formatName(
+                user?.name
+              )}?`}
               autoFocus
               onChange={formik.handleChange}
               value={formik.values.body}

@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
+  const [rerender, setRerender] = useState(false);
   const { asPath } = useRouter();
   const { user } = useAppSelector((state) => ({
     user: state.auth.user as any,
@@ -47,7 +48,7 @@ const Home = () => {
       setPosts(data.result);
     };
     getPosts();
-  }, [asPath]);
+  }, [asPath, rerender]);
 
   return (
     <>
@@ -56,7 +57,7 @@ const Home = () => {
       </Head>
       <div className="grid grid-cols-12 gap-10 my-8">
         <div className="col-span-8">
-          <PostModule />
+          <PostModule setRerender={setRerender} />
           <TabModule />
           {posts.length === 0 && (
             <div className="my-10 text-center">
@@ -66,7 +67,7 @@ const Home = () => {
             </div>
           )}
           {posts.map((item: any, index: number) => (
-            <UserPosts key={item._id} data={item} />
+            <UserPosts key={item._id} data={item} setRerender={setRerender} />
           ))}
         </div>
         <div className="col-span-4">

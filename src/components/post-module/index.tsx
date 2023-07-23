@@ -1,18 +1,33 @@
 import React, { useState } from "react";
 import CreatePost from "./createPost";
+import { useAppSelector } from "@/models";
 
-const PostModule = () => {
+const PostModule = ({ setRerender }: any) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user } = useAppSelector((state) => ({
+    user: state.auth.user as any,
+  }));
   return (
     <>
       <div className="bg-white border border-gray-100 shadow-sm rounded-lg p-4">
         <div className="flex items-center">
           <div className="w-16">
-            <img
-              src="https://images.unsplash.com/photo-1457449940276-e8deed18bfff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8cHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D&w=1000&q=80"
+            {/* <img
+              src={user?.picture}
               alt=""
               className="w-12 h-12 rounded-full object-cover shadow-sm"
-            />
+            /> */}
+            {user?.picture ? (
+              <img
+                src={user?.picture}
+                alt=""
+                className="w-12 h-12 rounded-full object-cover shadow-sm"
+              />
+            ) : (
+              <div className="bg-gray-100 text-gray-700 w-12 h-12 rounded-full flex justify-center items-center">
+                <i className="bx bx-user text-2xl"></i>
+              </div>
+            )}
           </div>
           <div
             className="w-full h-12 bg-gray-100 rounded-full flex items-center cursor-pointer select-none"
@@ -44,7 +59,9 @@ const PostModule = () => {
           </button>
         </div>
       </div>
-      {isModalOpen && <CreatePost closeFn={setIsModalOpen} />}
+      {isModalOpen && (
+        <CreatePost setRerender={setRerender} closeFn={setIsModalOpen} />
+      )}
     </>
   );
 };

@@ -70,7 +70,15 @@ const Header = () => {
               className="bg-gray-100 text-gray-700 w-10 h-10 rounded-full flex justify-center items-center"
               onClick={toogleDropDown}
             >
-              <i className="bx bx-user text-2xl"></i>
+              {user?.picture ? (
+                <img
+                  src={user?.picture}
+                  alt=""
+                  className="w-full h-full rounded-full object-cover shadow-sm"
+                />
+              ) : (
+                <i className="bx bx-user text-2xl"></i>
+              )}
             </button>
             <p className="ml-2">
               Hi,{" "}
