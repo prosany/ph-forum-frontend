@@ -28,11 +28,13 @@ const Home = () => {
         return `/get-posts?email=${user.email}`;
 
       case "/?tab=admin_post":
-        return "/get-posts";
+        return "/get-posts?admin=true";
 
       case "/?tab=not_replied":
-        return "/get-posts";
+        return "/get-posts?no_comment=true";
 
+      case "/?tab=unresolved":
+        return "/get-posts?unresolved=true";
       default:
         return "/get-posts";
     }

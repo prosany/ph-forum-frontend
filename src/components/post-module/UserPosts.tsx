@@ -1,8 +1,9 @@
 import { useAppSelector } from "@/models";
 import { POST } from "@/utilities/axios-helper";
 import moment from "moment";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { toast } from "react-hot-toast";
+import CommentModal from "../comments";
 
 const UserPosts = ({ data, setRerender }: any) => {
   const {
@@ -13,13 +14,20 @@ const UserPosts = ({ data, setRerender }: any) => {
     upVotes,
     status,
     createdAt,
+    category,
     comments,
     isCommentOff,
     isCommentOffByAdmin,
     isResolved,
+    isRejected,
+    isUnresolved,
+    editedBy,
+    tags,
     user,
   } = data;
+  const PostCommentRef = useRef<HTMLTextAreaElement | any>(null);
   const [moreOption, setMoreOption] = useState(false);
+  const [seeComments, setSeeComment] = useState(false);
   const { storedUser } = useAppSelector((state) => ({
     storedUser: state.auth.user as any,
   }));
@@ -40,6 +48,32 @@ const UserPosts = ({ data, setRerender }: any) => {
       }
     } catch (error) {}
   };
+
+  const submitComment = async (event: any) => {
+    if (
+      event.keyCode === 13 &&
+      !event.shiftKey &&
+      PostCommentRef.current === document.activeElement
+    ) {
+      if (/^\s*$/.test(PostCommentRef.current.value)) return;
+      try {
+        const res = await POST(
+          `/comment-on/${_id}`,
+          { comment: PostCommentRef.current.value },
+          {
+            headers: {
+              Authorization: `Bearer ${storedUser?.token}`,
+            },
+          }
+        );
+        if (res.status === 1) {
+          PostCommentRef.current.value = "";
+          toast.success("Commented successfully.");
+          setRerender((prev: any) => !prev);
+        }
+      } catch (error) {}
+    }
+  };
   return (
     <div className="border border-gray-100 bg-white rounded-lg shadow-sm my-5">
       <div className="flex items-start p-6">
@@ -58,7 +92,17 @@ const UserPosts = ({ data, setRerender }: any) => {
         </div>
         <div className="w-full">
           <div className="flex justify-between">
-            <h1 className="text-lg font-medium">{user.name}</h1>
+            <div className="flex">
+              <h1 className="text-lg font-medium">{user.name}</h1>
+              <div>
+                {(user.role === "admin" || user.role === "moderator") && (
+                  <span className="text-[8px] bg-colorBaseHover px-2 py-1 rounded-md text-white ml-2 capitalize">
+                    {user.role}
+                  </span>
+                )}
+              </div>
+            </div>
+
             <div className="flex justify-center items-center">
               <p className="bg-violet-100 text-violet-800 font-medium text-sm px-3 py-1 rounded mr-3">
                 {status}
@@ -80,27 +124,136 @@ const UserPosts = ({ data, setRerender }: any) => {
                 {moreOption && (
                   <div className="absolute w-[230px] z-20 bg-white rounded-lg border top-full -right-2 px-2 text-left">
                     <ul className="select-none my-2">
-                      {user.email === storedUser.email ? (
+                      {storedUser.role === "admin" ||
+                      storedUser.role === "moderator" ||
+                      user.email === storedUser.email ? (
                         <>
-                          <li>
-                            <button
-                              onClick={() => {
-                                handleActivity({ isResolved: !isResolved });
-                              }}
-                              className="hover:bg-gray-50 w-full p-2 text-left rounded-lg"
-                            >
-                              <span className="mr-2">
-                                {isResolved ? (
-                                  <i className="fa-regular fa-circle-xmark text-red-600"></i>
-                                ) : (
-                                  <i className="fa-regular fa-circle-check text-green-600"></i>
+                          {storedUser.role === "admin" ||
+                          storedUser.role === "moderator" ? (
+                            <>
+                              <li>
+                                <button
+                                  onClick={() => {
+                                    handleActivity({
+                                      isUpdateStatus: "Rejected",
+                                    });
+                                  }}
+                                  className="hover:bg-gray-50 w-full p-2 text-left rounded-lg"
+                                >
+                                  <span className="mr-2">
+                                    {isRejected ? (
+                                      <i className="fa-regular fa-circle-xmark text-red-600"></i>
+                                    ) : (
+                                      <i className="fa-regular fa-circle-check text-green-600"></i>
+                                    )}
+                                  </span>
+                                  {isRejected
+                                    ? "Already Rejected"
+                                    : "Mark as Rejected"}
+                                </button>
+                              </li>
+                              <li>
+                                <button
+                                  onClick={() => {
+                                    handleActivity({
+                                      isUpdateStatus: "Unresolved",
+                                    });
+                                  }}
+                                  className="hover:bg-gray-50 w-full p-2 text-left rounded-lg"
+                                >
+                                  <span className="mr-2">
+                                    {isUnresolved ? (
+                                      <i className="fa-regular fa-circle-xmark text-red-600"></i>
+                                    ) : (
+                                      <i className="fa-regular fa-circle-check text-green-600"></i>
+                                    )}
+                                  </span>
+                                  {isUnresolved
+                                    ? "Already Unresolved"
+                                    : "Mark as Unresolved"}
+                                </button>
+                              </li>
+                              <li>
+                                <button
+                                  onClick={() => {
+                                    handleActivity({
+                                      isUpdateStatus: "Closed",
+                                    });
+                                  }}
+                                  className="hover:bg-gray-50 w-full p-2 text-left rounded-lg"
+                                >
+                                  <span className="mr-2">
+                                    {status === "Closed" ? (
+                                      <i className="fa-regular fa-circle-xmark text-red-600"></i>
+                                    ) : (
+                                      <i className="fa-regular fa-circle-check text-green-600"></i>
+                                    )}
+                                  </span>
+                                  {status === "Closed"
+                                    ? "Already Closed"
+                                    : "Mark as Closed"}
+                                </button>
+                              </li>
+                            </>
+                          ) : null}
+                          {storedUser.role === "admin" ||
+                          storedUser.role === "moderator" ? (
+                            <li>
+                              <button
+                                onClick={() => {
+                                  handleActivity({
+                                    isUpdateStatus: "Resolved",
+                                  });
+                                }}
+                                className="hover:bg-gray-50 w-full p-2 text-left rounded-lg"
+                              >
+                                <span className="mr-2">
+                                  {isResolved ? (
+                                    <i className="fa-regular fa-circle-xmark text-red-600"></i>
+                                  ) : (
+                                    <i className="fa-regular fa-circle-check text-green-600"></i>
+                                  )}
+                                </span>
+                                {isResolved
+                                  ? "Mark as Unresolved"
+                                  : "Mark as Resolved"}
+                              </button>
+                            </li>
+                          ) : (
+                            <li>
+                              <button
+                                onClick={() => {
+                                  if (editedBy === "admin") {
+                                    toast.error(
+                                      "This post is already edited by admin you can't edit it."
+                                    );
+                                    return;
+                                  }
+
+                                  handleActivity({ isResolved: !isResolved });
+                                }}
+                                className="hover:bg-gray-50 w-full p-2 text-left rounded-lg"
+                              >
+                                <span className="mr-2">
+                                  {isResolved || editedBy === "admin" ? (
+                                    <i className="fa-regular fa-circle-xmark text-red-600"></i>
+                                  ) : (
+                                    <i className="fa-regular fa-circle-check text-green-600"></i>
+                                  )}
+                                </span>
+                                {editedBy === "admin"
+                                  ? `Post is ${status}`
+                                  : isResolved
+                                  ? "Mark as Unresolved"
+                                  : "Mark as Resolved"}
+                                {editedBy === "admin" && (
+                                  <span className="text-[8px] block">
+                                    Already edited by admin you can't edit it.
+                                  </span>
                                 )}
-                              </span>
-                              {isResolved
-                                ? "Mark as Unresolved"
-                                : "Mark as Resolved"}
-                            </button>
-                          </li>
+                              </button>
+                            </li>
+                          )}
                           <li>
                             <button
                               onClick={() => {
@@ -125,13 +278,16 @@ const UserPosts = ({ data, setRerender }: any) => {
                           <li>
                             <button
                               onClick={() => {
-                                if (isCommentOffByAdmin)
+                                if (
+                                  isCommentOffByAdmin &&
+                                  (storedUser.role !== "admin" ||
+                                    storedUser.role === "moderator")
+                                )
                                   return toast.error(
-                                    "Commenting is turned off by admin"
+                                    "Commenting is turned off by admin you can't turn it on."
                                   );
                                 handleActivity({ isCommentOff: !isCommentOff });
                               }}
-                              disabled={isCommentOffByAdmin}
                               className="hover:bg-gray-50 w-full p-2 text-left rounded-lg disabled:bg-red-50"
                             >
                               <span className="mr-2">
@@ -141,8 +297,10 @@ const UserPosts = ({ data, setRerender }: any) => {
                                   <i className="fa-solid fa-comment-slash text-red-600"></i>
                                 )}
                               </span>
-                              {isCommentOffByAdmin
-                                ? "Commenting turn of by admin"
+                              {isCommentOffByAdmin &&
+                              (storedUser.role !== "admin" ||
+                                storedUser.role === "moderator")
+                                ? "Comment turn of by admin"
                                 : isCommentOff
                                 ? "Turn on Commenting"
                                 : "Turn off Commenting"}
@@ -199,12 +357,14 @@ const UserPosts = ({ data, setRerender }: any) => {
               </span>
               {moment.parseZone(createdAt).local().format("LL")}
             </p>
-            <p className="text-xs text-gray-600">
-              <span className="mr-2 text-xs text-gray-600">
-                <i className="fa-solid fa-people-group"></i>
-              </span>
-              {user.batch}
-            </p>
+            {user.role === "admin" || user.role === "moderator" ? null : (
+              <p className="text-xs text-gray-600">
+                <span className="mr-2 text-xs text-gray-600">
+                  <i className="fa-solid fa-people-group"></i>
+                </span>
+                {user.batch}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -239,9 +399,31 @@ const UserPosts = ({ data, setRerender }: any) => {
             </div>
           ))}
       </div>
-      <div className="p-6">
+      <div className="px-6 pt-6 flex items-center flex-wrap">
+        <span className="bg-blue-200 text-gray-900 px-2 py-1 m-1 rounded text-xs">
+          {category}
+        </span>
+        {tags.length > 0 && <span className="mx-4 text-gray-300">|</span>}
+        <div>
+          {tags.map((item: any, index: number) => (
+            <span
+              key={index}
+              className="bg-lime-200 text-gray-900 px-2 py-1 rounded m-1 text-xs"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div className="px-6 pb-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-gray-600 text-sm font-medium flex items-center">
+          <h1
+            className="text-gray-600 text-sm font-medium flex items-center cursor-pointer select-none"
+            onClick={() => {
+              comments.length === 0 && toast.error("No comments found.");
+              comments.length > 0 && setSeeComment((prev) => !prev);
+            }}
+          >
             <span className="text-xl mr-2">
               <i className="fa-regular fa-comment-dots fa-flip-horizontal"></i>
             </span>
@@ -296,8 +478,10 @@ const UserPosts = ({ data, setRerender }: any) => {
               </div>
               <div className="w-full bg-gray-100 h-12 rounded-full py-2 px-4 flex items-center">
                 <textarea
+                  ref={PostCommentRef}
                   className="bg-transparent w-full h-full outline-none p-1 resize-none"
                   placeholder="What's on your mind?"
+                  onKeyDown={submitComment}
                 ></textarea>
 
                 <div className="flex justify-center items-center gap-4 ml-2">
@@ -315,6 +499,12 @@ const UserPosts = ({ data, setRerender }: any) => {
                   </button>
                 </div>
               </div>
+              {seeComments && (
+                <CommentModal
+                  comments={comments}
+                  setSeeComment={setSeeComment}
+                />
+              )}
             </div>
           </>
         ) : (

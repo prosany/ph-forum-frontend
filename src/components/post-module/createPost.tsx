@@ -57,12 +57,21 @@ const CreatePost = (props: any) => {
       try {
         toastId = toast.loading("Posting...");
         const data = { ...values };
+        let option = {};
+        if (
+          user.role === "admin" ||
+          user.role === "moderator" ||
+          user.role === "superadmin"
+        ) {
+          option = { isPostedByAdmin: true };
+        }
         const uploaded = await uploadFiles(files);
 
         const res = await POST(
           "/create-post",
           {
             ...data,
+            ...option,
             tags: tags.tags.join(", ") || null,
             photosOrVideos: uploaded || [],
           },

@@ -1,11 +1,15 @@
 import { authAction } from "@/global/auth/authSlice";
 import { useAppDispatch } from "@/models";
+import { POST } from "@/utilities/axios-helper";
+import uploadFiles from "@/utilities/cloudinary";
 import { quickLinks } from "@/utilities/dropdown-menus";
 import Link from "next/link";
 import React from "react";
+import { toast } from "react-hot-toast";
 
 const DropdownMenu = (props: any) => {
   const dispatch = useAppDispatch();
+
   const { menuRef, user } = props;
   return (
     <div
@@ -31,6 +35,50 @@ const DropdownMenu = (props: any) => {
           <p className="text-xs text-gray-500 select-none">{user?.email}</p>
         </div>
       </div>
+      <input
+        type="file"
+        id="profile_picture"
+        onChange={async (e) => {
+          try {
+            const files = Array.from(e.target.files as any);
+            if (files.length <= 0) return;
+            const toastId = toast.loading("Updating profile picture...");
+            const uploaded = await uploadFiles(files);
+            const res = await POST(
+              "/update",
+              {
+                picture: uploaded[0].url,
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${user?.token}`,
+                },
+              }
+            );
+            if (res.status === 1) {
+              toast.dismiss(toastId);
+              toast.success("Successfully updated profile picture.");
+              dispatch(
+                authAction.loginComplete({ ...user, picture: uploaded[0].url })
+              );
+              e.target.files = null;
+            } else {
+              toast.dismiss(toastId);
+              toast.error("Failed to update profile picture.");
+              e.target.files = null;
+            }
+          } catch (error) {
+            e.target.files = null;
+          }
+        }}
+        hidden
+      />
+      <label
+        htmlFor="profile_picture"
+        className="px-2 text-xs mb-3 block text-colorBaseHover font-medium cursor-pointer"
+      >
+        Change Pofile Picture
+      </label>
       <hr />
       <ul className="px-1">
         {quickLinks.map((item) => (
