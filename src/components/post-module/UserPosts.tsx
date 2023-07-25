@@ -4,6 +4,7 @@ import moment from "moment";
 import React, { useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import CommentModal from "../comments";
+import EditPost from "./EditPost";
 
 const UserPosts = ({ data, setRerender }: any) => {
   const {
@@ -28,6 +29,7 @@ const UserPosts = ({ data, setRerender }: any) => {
   const PostCommentRef = useRef<HTMLTextAreaElement | any>(null);
   const [moreOption, setMoreOption] = useState(false);
   const [seeComments, setSeeComment] = useState(false);
+  const [editPost, setEditPost] = useState(false);
   const { storedUser } = useAppSelector((state) => ({
     storedUser: state.auth.user as any,
   }));
@@ -268,7 +270,10 @@ const UserPosts = ({ data, setRerender }: any) => {
                             </button>
                           </li>
                           <li>
-                            <button className="hover:bg-gray-50 w-full p-2 text-left rounded-lg">
+                            <button
+                              onClick={() => setEditPost((prev) => !prev)}
+                              className="hover:bg-gray-50 w-full p-2 text-left rounded-lg"
+                            >
                               <span className="mr-2">
                                 <i className="fa-regular fa-pen-to-square"></i>
                               </span>
@@ -503,6 +508,13 @@ const UserPosts = ({ data, setRerender }: any) => {
                 <CommentModal
                   comments={comments}
                   setSeeComment={setSeeComment}
+                />
+              )}
+              {editPost && (
+                <EditPost
+                  closeFn={setEditPost}
+                  setRerender={setRerender}
+                  post={data}
                 />
               )}
             </div>
